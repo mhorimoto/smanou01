@@ -1,0 +1,6 @@
+# Program
+*.hex
+*.elf
+lowcore/build/*
+main/build/*
+
