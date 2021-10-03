@@ -2,8 +2,8 @@
 // M302K-TK01
 //  MIT License
 //  Copyright (c) 2021 Masafumi Horimoto
-//  Release on 29-July-2021
-//  https://github.com/mhorimoto/M302.git
+//  Release on 03-Oct-2021
+//  https://github.com/mhorimoto/smanou01.git
 ///////////////////////////////////////////////////////////////////
 
 
@@ -14,11 +14,11 @@
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
 #include <EEPROM.h>
-#include <LiquidCrystal_I2C.h>
+#include "LiquidCrystal_I2C.h"
 #include <Wire.h>
 #include <Adafruit_I2CDevice.h>
 #include <Adafruit_I2CRegister.h>
-#include "Adafruit_SHT31.h"
+#include <Adafruit_SHT31.h>
 
 uint8_t mcusr_mirror __attribute__ ((section (".noinit")));
 void get_mcusr(void)	 \
@@ -39,7 +39,7 @@ void get_mcusr(void) {
 #define  pCND        0x43
 #define  delayMillis 5000UL // 5sec
 
-const char VERSION[16] PROGMEM = "\xbd\xcf\xc9\xb3\xbc\xde\xad\xb8 V042";
+const char VERSION[16] PROGMEM = "\xbd\xcf\xc9\xb3\xbc\xde\xad\xb8 V042A";
 
 char uecsid[6], uecstext[180],strIP[16],linebuf[80];
 byte lineptr = 0;

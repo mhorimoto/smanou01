@@ -26,7 +26,6 @@ M302KはArduino UNOのシールドとして接続する。
 
 ## 3.1. 必要なライブラリ
 - [Ethernet2](https://github.com/adafruit/Ethernet2)
-- [LiquidCrystal_I2C](https://github.com/marcoschwartz/LiquidCrystal_I2C)
 - [Adafruit_BusIO](https://github.com/adafruit/Adafruit_BusIO)
 - [Adafruit_SHT31](https://github.com/adafruit/Adafruit_SHT31)
 
