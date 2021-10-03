@@ -3,8 +3,8 @@
 
 M302KにSHT3xを接続して温度湿度計測を行い、結果をUECS電文で送信する装置。
 
-- Version: V042
-- Release: 29-Jul-2021
+- Version: V042A
+- Release: 03-Oct-2021
 - Develop: HOLLY&Co.,Ltd.
 
 # 1. 必要なH/W
