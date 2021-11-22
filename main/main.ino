@@ -38,8 +38,10 @@ void get_mcusr(void) {
 #define  pINILLUMI   51
 #define  pCND        0x43
 #define  delayMillis 5000UL // 5sec
+#define  CDS0        A0
+#define  CDS0SW      A3
 
-const char VERSION[16] PROGMEM = "\xbd\xcf\xc9\xb3\xbc\xde\xad\xb8 V042A";
+const char VERSION[16] PROGMEM = "\xbd\xcf\xc9\xb3\xbc\xde\xad\xb8 V044 ";
 
 char uecsid[6], uecstext[180],strIP[16],linebuf[80];
 byte lineptr = 0;
@@ -53,7 +55,7 @@ char api[] = "api.smart-agri.jp";
 /////////////////////////////////////
 
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
-char lcdtext[5][17];
+char lcdtext[6][17];
 
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
@@ -76,6 +78,8 @@ void setup(void) {
   lcd.backlight();
   configure_wdt();
   pinMode(2,INPUT_PULLUP);
+  pinMode(CDS0,INPUT_PULLUP);
+  pinMode(CDS0SW,INPUT_PULLUP);
   EEPROM.get(pUECSID,uecsid);
   EEPROM.get(pMACADDR,macaddr);
   for(i=0;i<16;i++) {
@@ -104,6 +108,11 @@ void setup(void) {
       sht31addr = 0;
       cndVal |= 0x01000000;   // cnd:Alert=1
     }
+  }
+  delay(500);
+  if (analogRead(CDS0SW)<100) {
+    strcpy(lcdtext[3],"CDS PRESENT     ");
+    lcdout(0,3,0);
   }
   delay(500);
   Ethernet.init(10);
@@ -143,7 +152,7 @@ void(*resetFunc)(void) = 0;
 /////////////////////////////////
 void loop() {
   static int k=0;
-  int i,ia,ta,tb;
+  int i,ia,ta,tb,cdsv;
   byte room,region,priority,interval;
   int  order;
   int  inchar ;
@@ -176,9 +185,33 @@ void loop() {
      } else {
        strcpy(lcdtext[4],("NO SHT SENSOR"));
      }
+     // INILLUMI(CdS) Presents
+     if (analogRead(CDS0SW)<100) {
+       cdsv = 1023 - analogRead(CDS0);
+       sprintf(&val[0],"%d",cdsv);
+       sprintf(lcdtext[5],"ILL=%d",cdsv);
+       uecsSendData(pINILLUMI,xmlDT,val);
+     }
      k++;
-     if (k>3) k=0;
-     lcdout(k,4,1);
+     switch(k) {
+     case 3:
+       if (analogRead(CDS0SW)>=100) {
+	 lcdout(3,4,1);
+	 k = -1;
+       }
+       break;
+     case 4:
+       if (analogRead(CDS0SW)<100) {
+	 lcdout(4,5,1);
+       }
+       break;
+     case 5:
+       k = 0;
+       lcdout(0,4,1);
+       break;
+     default:
+       lcdout(k,4,1);
+     }
    }
    // 1 min interval
    if (period60sec==1) {
@@ -217,6 +250,12 @@ void loop() {
        if (ia!=0) {
 	 cndVal |= ((ia << 4) & 0xf0);
        }
+     }
+     if (analogRead(CDS0SW)<100) {
+       cdsv = 1023 - analogRead(CDS0);
+       sprintf(&val[0],"%d",cdsv);
+       ia = gisSendData(pINILLUMI,261,val);
+       wdt_reset();
      }
    }
    // 1 sec interval
