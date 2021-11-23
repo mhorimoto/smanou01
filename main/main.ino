@@ -21,7 +21,7 @@
 #include <Adafruit_SHT31.h>
 
 uint8_t mcusr_mirror __attribute__ ((section (".noinit")));
-void get_mcusr(void)	 \
+void get_mcusr(void)     \
   __attribute__((naked)) \
   __attribute__((section(".init3")));
 void get_mcusr(void) {
@@ -87,7 +87,7 @@ void setup(void) {
   }
   lcdtext[0][i] = 0;
   sprintf(lcdtext[1],ids,"ID",
-	  uecsid[0],uecsid[1],uecsid[2],uecsid[3],uecsid[4],uecsid[5]);
+          uecsid[0],uecsid[1],uecsid[2],uecsid[3],uecsid[4],uecsid[5]);
   lcdout(0,1,1);
   Serial.begin(115200);
   Serial.println(lcdtext[0]);
@@ -97,8 +97,8 @@ void setup(void) {
     for(i=0;i<10;i++) {
       delay(100);
       if (sht31.begin(sht31addr)) {
-	Serial.println(F("ST2"));    // SHT31 at 0x44
-	break;
+        Serial.println(F("ST2"));    // SHT31 at 0x44
+        break;
       }
     }
     if (i==10) {
@@ -125,7 +125,7 @@ void setup(void) {
       broadcastIP[i] = ~subnetmaskIP[i]|localIP[i];
     }
     sprintf(lcdtext[2],ids,"HW",
-	    macaddr[0],macaddr[1],macaddr[2],macaddr[3],macaddr[4],macaddr[5]);
+            macaddr[0],macaddr[1],macaddr[2],macaddr[3],macaddr[4],macaddr[5]);
     sprintf(strIP,"%d.%d.%d.%d",localIP[0],localIP[1],localIP[2],localIP[3]);
     sprintf(lcdtext[3],"%s",strIP);
     lcdout(2,3,1);
@@ -196,13 +196,13 @@ void loop() {
      switch(k) {
      case 3:
        if (analogRead(CDS0SW)>=100) {
-	 lcdout(3,4,1);
-	 k = -1;
+         lcdout(3,4,1);
+         k = -1;
        }
        break;
      case 4:
        if (analogRead(CDS0SW)<100) {
-	 lcdout(4,5,1);
+         lcdout(4,5,1);
        }
        break;
      case 5:
@@ -222,33 +222,33 @@ void loop() {
        ia = gisSendData(pINAIRTEMP,16,val);
        switch(ia) {
        case 0:
-	 cndVal &= 0xffcffeff; // 
-	 break;
+         cndVal &= 0xffcffeff; // 
+         break;
        case 1:
-	 cndVal |= 0x00100100; // Not connect to Server
-	 break;
+         cndVal |= 0x00100100; // Not connect to Server
+         break;
        case 2:
-	 cndVal |= 0x00200100; // Server response timeout
-	 break;
+         cndVal |= 0x00200100; // Server response timeout
+         break;
        }
        wdt_reset();
        getSHTdata(&val[0],pINAIRHUMID,0); // 整数型
        ia = gisSendData(pINAIRHUMID,17,val);
        switch(ia) {
        case 0:
-	 cndVal &= 0xffcffdff; // 
-	 break;
+         cndVal &= 0xffcffdff; // 
+         break;
        case 1:
-	 cndVal |= 0x00100200; // Not connect to Server
-	 break;
+         cndVal |= 0x00100200; // Not connect to Server
+         break;
        case 2:
-	 cndVal |= 0x00200200; // Server response timeout
-	 break;
+         cndVal |= 0x00200200; // Server response timeout
+         break;
        }
        cndVal &= 0xffffff0f;  // Reset maintain code
        ia = Ethernet.maintain();
        if (ia!=0) {
-	 cndVal |= ((ia << 4) & 0xf0);
+         cndVal |= ((ia << 4) & 0xf0);
        }
      }
      if (analogRead(CDS0SW)<100) {
@@ -351,7 +351,7 @@ byte gisSendData(int a,int sk,char *val) {
   
   wdt_reset();
   sprintf(linebuf,gisDT,macaddr[0],macaddr[1],macaddr[2],macaddr[3],macaddr[4],macaddr[5],
-	  order,sk,val,room,region,order,priority,dname);
+          order,sk,val,room,region,order,priority,dname);
   EthClient.stop();
   if (EthClient.connect(api,80)) {
     EthClient.println(F("POST /farmem/rx/rxdata.php HTTP/1.1"));
@@ -398,8 +398,8 @@ void getSHTdata(char *v,int a,int f) {
       ta = (int)fv;
       tb = round((double)((fv-ta)*10));
       if (tb>=10.0) {
-	ta++;
-	tb-=10;
+        ta++;
+        tb-=10;
       }
       sprintf(v,"%d.%01d",ta,tb);
     } else {
