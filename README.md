@@ -69,6 +69,12 @@ XとYの値を入力するとそれらを用いた四則演算の結果をシリ
 使い方は、取扱説明書を [main/MANUAL.md](main/MANUAL.md) に記すので、そちらを参照する。
 まだ書かれていない。
 
+講習に使われるスライドは、
+
+https://docs.google.com/presentation/d/1d0_QpBvv0rkIGEVWAzn_yDBKqqvXu9McK5GpKryyYN8/edit?usp=sharing
+
+予告なく変更される可能性はある。
+
 # 5. 著作権
 
 This software is released under the MIT License, see [LICENSE.txt](LICENSE.txt).  
