@@ -16,7 +16,7 @@ M302KにSHT3xを接続して温度湿度計測を行い、結果をUECS電文で
 - I2C I/F LCD 1602 (16桁2行)
 - AC100/220V to DC5V/1.5A 電源
 - プッシュスイッチ
-- CdS (Option)
+- CdS (Option)  
 ![CdS](images/cds.jpg)
 
 # 2. M302Kとの配線
