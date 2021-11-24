@@ -59,15 +59,10 @@ XとYの値を入力するとそれらを用いた四則演算の結果をシリ
 1. M302にLCDを接続する。
 1. lcddisp.inoをコンパイルしてロードする。
 1. シリアルモニタを開いて、キーボードから文字を入力する。シリアルモニタには、
-```
-    LCD Sample Program VER:1.00
-    Enter ASCII Characters
-```
+![シリアルモニタ](images/lcddispscr.png)  
 と表示する。上のフィールドに文字を入力して[送信]ボタンをクリックする。
 1. LCDに表示されていく。＊表示があふれると行が変わる。
 
-シリアルモニタを開く。
-![シリアルモニタ](images/lcddispscr.png)  
 
 文字を入力していく、表示域からあふれると行を変えて表示を続ける。
 ![LCD画面](images/lcddisplcd.jpg)
