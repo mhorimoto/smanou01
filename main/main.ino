@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////
 // M302K-TK01
 //  MIT License
-//  Copyright (c) 2021 Masafumi Horimoto
-//  Release on 03-Oct-2021
+//  Copyright (c) 2021-2022 Masafumi Horimoto
+//  Release on 03-Oct-2022
 //  https://github.com/mhorimoto/smanou01.git
 ///////////////////////////////////////////////////////////////////
 
@@ -41,7 +41,7 @@ void get_mcusr(void) {
 #define  CDS0        A0
 #define  CDS0SW      A3
 
-const char VERSION[16] PROGMEM = "\xbd\xcf\xc9\xb3\xbc\xde\xad\xb8 V044 ";
+const char VERSION[16] PROGMEM = "\xbd\xcf\xc9\xb3\xbc\xde\xad\xb8 V04bD";
 
 char uecsid[6], uecstext[180],strIP[16],linebuf[80];
 byte lineptr = 0;
@@ -149,6 +149,69 @@ void setup(void) {
 /////////////////////////////////
 void(*resetFunc)(void) = 0;
 
+extern void lcdout(int,int,int);
+extern int setParam(char *);
+extern void dumpLowCore(void);
+  
+#define CCMFMT "<?xml version=\"1.0\"?><UECS ver=\"1.00-E10\"><DATA type=\"%s.mIC\" room=\"%d\" region=\"%d\" order=\"%d\" priority=\"%d\">%s</DATA><IP>%s</IP></UECS>";
+//char *ids = "%s:%02X%02X%02X%02X%02X%02X";
+
+int dk=0;
+void UserEvery10Seconds(void) {
+  extern void lcdout(int,int,int);
+  char *xmlDT PROGMEM = CCMFMT;
+  char name[10],dname[11],val[6];
+  int ia,cdsv;
+  wdt_reset();
+  if (sht31addr>0) {
+    //      ther = sht31.readTemperature();
+    ia = pINAIRTEMP;
+    getSHTdata(&val[0],pINAIRTEMP,0);  // 整数型にしない
+    //     Serial.println(val);
+    sprintf(linebuf,"T=%sC",val);
+    uecsSendData(pINAIRTEMP,xmlDT,val,10);
+    getSHTdata(&val[0],pINAIRHUMID,0);  // 整数型
+    uecsSendData(pINAIRHUMID,xmlDT,val,10);
+    sprintf(lcdtext[4],"%s H=%s%%",linebuf,val);
+  } else {
+    strcpy(lcdtext[4],("NO SHT SENSOR"));
+  }
+  if (analogRead(CDS0SW)<100) {
+    cdsv = 1023 - analogRead(CDS0);
+    sprintf(&val[0],"%d",cdsv);
+    sprintf(lcdtext[5],"ILL=%d",cdsv);
+    uecsSendData(pINILLUMI,xmlDT,val,10);
+  }
+  Serial.print("@");
+}
+
+void lcd_display_loop(void) {
+  dk++;
+  Serial.print("=");
+  Serial.print(dk);
+  Serial.print("=");
+  switch(dk) {
+  case 3:
+    if (analogRead(CDS0SW)>=100) {
+      lcdout(3,4,1);
+      dk = -1;
+    }
+    break;
+  case 4:
+    if (analogRead(CDS0SW)<100) {
+      lcdout(4,5,1);
+    }
+    break;
+  case 5:
+    dk = 0;
+    lcdout(0,4,1);
+    break;
+  default:
+    lcdout(dk,4,1);
+  }
+}
+
+
 /////////////////////////////////
 void loop() {
   static int k=0;
@@ -159,59 +222,60 @@ void loop() {
   float ther,humi;
   char name[10],dname[11],val[6];
 
-  extern void lcdout(int,int,int);
-  extern int setParam(char *);
-  extern void dumpLowCore(void);
-  
-  const char *xmlDT PROGMEM = "<?xml version=\"1.0\"?><UECS ver=\"1.00-E10\"><DATA type=\"%s.mIC\" room=\"%d\" region=\"%d\" order=\"%d\" priority=\"%d\">%s</DATA><IP>%s</IP></UECS>";
+  //  extern void lcdout(int,int,int);
+  //  extern int setParam(char *);
+  //  extern void dumpLowCore(void);
+
+  char *xmlDT PROGMEM = CCMFMT;
   const char *ids PROGMEM = "%s:%02X%02X%02X%02X%02X%02X";
   
    wdt_reset();
-
    // 10 sec interval
    if (period10sec==1) {
-     wdt_reset();
-     period10sec = 0;
-     if (sht31addr>0) {
-       //      ther = sht31.readTemperature();
-       ia = pINAIRTEMP;
-       getSHTdata(&val[0],pINAIRTEMP,0);  // 整数型にしない
-       //     Serial.println(val);
-       sprintf(linebuf,"T=%sC",val);
-       uecsSendData(pINAIRTEMP,xmlDT,val);
-       getSHTdata(&val[0],pINAIRHUMID,0);  // 整数型
-       uecsSendData(pINAIRHUMID,xmlDT,val);
-       sprintf(lcdtext[4],"%s H=%s%%",linebuf,val);
-     } else {
-       strcpy(lcdtext[4],("NO SHT SENSOR"));
-     }
-     // INILLUMI(CdS) Presents
-     if (analogRead(CDS0SW)<100) {
-       cdsv = 1023 - analogRead(CDS0);
-       sprintf(&val[0],"%d",cdsv);
-       sprintf(lcdtext[5],"ILL=%d",cdsv);
-       uecsSendData(pINILLUMI,xmlDT,val);
-     }
-     k++;
-     switch(k) {
-     case 3:
-       if (analogRead(CDS0SW)>=100) {
-         lcdout(3,4,1);
-         k = -1;
-       }
-       break;
-     case 4:
-       if (analogRead(CDS0SW)<100) {
-         lcdout(4,5,1);
-       }
-       break;
-     case 5:
-       k = 0;
-       lcdout(0,4,1);
-       break;
-     default:
-       lcdout(k,4,1);
-     }
+     UserEvery10Seconds();
+     lcd_display_loop();
+     period10sec=0;
+     //wdt_reset();
+     // if (sht31addr>0) {
+     //   //      ther = sht31.readTemperature();
+     //   ia = pINAIRTEMP;
+     //   getSHTdata(&val[0],pINAIRTEMP,0);  // 整数型にしない
+     //   //     Serial.println(val);
+     //   sprintf(linebuf,"T=%sC",val);
+     //   uecsSendData(pINAIRTEMP,xmlDT,val);
+     //   getSHTdata(&val[0],pINAIRHUMID,0);  // 整数型
+     //   uecsSendData(pINAIRHUMID,xmlDT,val);
+     //   sprintf(lcdtext[4],"%s H=%s%%",linebuf,val);
+     // } else {
+     //   strcpy(lcdtext[4],("NO SHT SENSOR"));
+     // }
+     // // INILLUMI(CdS) Presents
+     // if (analogRead(CDS0SW)<100) {
+     //   cdsv = 1023 - analogRead(CDS0);
+     //   sprintf(&val[0],"%d",cdsv);
+     //   sprintf(lcdtext[5],"ILL=%d",cdsv);
+     //   uecsSendData(pINILLUMI,xmlDT,val);
+     // }
+     // k++;
+     // switch(k) {
+     // case 3:
+     //   if (analogRead(CDS0SW)>=100) {
+     //     lcdout(3,4,1);
+     //     k = -1;
+     //   }
+     //   break;
+     // case 4:
+     //   if (analogRead(CDS0SW)<100) {
+     //     lcdout(4,5,1);
+     //   }
+     //   break;
+     // case 5:
+     //   k = 0;
+     //   lcdout(0,4,1);
+     //   break;
+     // default:
+     //   lcdout(k,4,1);
+     // }
    }
    // 1 min interval
    if (period60sec==1) {
@@ -259,13 +323,13 @@ void loop() {
      }
    }
    // 1 sec interval
-   if (period1sec==1) {
-     period1sec = 0;
-     ia = pCND;
-     sprintf(val,"%u",cndVal);
-     uecsSendData(ia,xmlDT,val);
-     cndVal &= 0xfffffffe;            // Clear setup completed flag
-   }
+   //if (period1sec==1) {
+     // period1sec = 0;
+     // ia = pCND;
+     // sprintf(val,"%u",cndVal);
+     // uecsSendData(ia,xmlDT,val);
+     // cndVal &= 0xfffffffe;            // Clear setup completed flag
+   //}
    wdt_reset();
 }
 
@@ -274,6 +338,7 @@ ISR(TIMER1_COMPA_vect) {
   cnt10++;
   cnt60++;
   period1sec = 1;
+  UserEverySecond();
   if (cnt10 >= 10) {
     cnt10 = 0;
     period10sec = 1;
@@ -281,6 +346,7 @@ ISR(TIMER1_COMPA_vect) {
   if (cnt60 >= 60) {
     cnt60 = 0;
     period60sec = 1;
+    UserEveryMinute();
   }
 }
 
@@ -305,7 +371,7 @@ void configure_wdt(void) {
                                    //  8 seconds: 0b100001
 }
 
-void uecsSendData(int a,char *xmlDT,char *val) {
+void uecsSendData(int a,char *xmlDT,char *val,int z) {
   byte room,region,priority,interval;
   int  order,i;
   char name[10],dname[11]; // ,val[6];
@@ -320,7 +386,7 @@ void uecsSendData(int a,char *xmlDT,char *val) {
     if (name[i]==NULL) break;
   }
   dname[i] = NULL;
-  sprintf(uecstext,xmlDT,dname,room,region,order,priority,val,strIP);
+  sprintf(uecstext,xmlDT,dname,room,region,order,priority+z,val,strIP);
   Udp16520.beginPacket(broadcastIP,16520);
   Udp16520.write(uecstext);
   Udp16520.endPacket();
@@ -413,3 +479,32 @@ void getSHTdata(char *v,int a,int f) {
     break;
   }
 }
+
+void UserEverySecond(void) {
+  static byte a=0 ;
+  char val[6];
+  int ia;
+  char *xmlDT PROGMEM = CCMFMT;
+  if (a>9) {
+    a=0;
+  }
+  Serial.print(a);
+  a++;
+  period1sec = 0;
+  ia = pCND;
+  sprintf(val,"%u",cndVal);
+  uecsSendData(ia,xmlDT,val,0);
+  cndVal &= 0xfffffffe;            // Clear setup completed flag
+}
+
+void UserEveryMinute(void) {
+  static byte a=0 ;
+  char *xmlDT PROGMEM = CCMFMT;
+  if (a>9) {
+    a=0;
+  }
+  Serial.print("*");
+  Serial.println(a);
+  a++;
+}
+
