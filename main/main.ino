@@ -41,7 +41,7 @@ void get_mcusr(void) {
 #define  CDS0        A0
 #define  CDS0SW      A3
 
-const char VERSION[16] PROGMEM = "\xbd\xcf\xc9\xb3\xbc\xde\xad\xb8 V04bD";
+const char VERSION[16] PROGMEM = "\xbd\xcf\xc9\xb3\xbc\xde\xad\xb8 V04cD";
 
 char uecsid[6], uecstext[180],strIP[16],linebuf[80];
 byte lineptr = 0;
@@ -400,7 +400,7 @@ byte gisSendData(int a,int sk,char *val) {
   byte room,region,priority,interval;
   int  order,i;
   char name[10],dname[11];
-  
+  return 0;
   lcd.setCursor(15,1);
   lcd.print("W");
   EEPROM.get(a+0x01,room);
